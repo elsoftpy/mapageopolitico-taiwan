@@ -21,8 +21,8 @@
         }
 
         /* =========================
-   HEADER CENTRADO
-========================= */
+        HEADER CENTRADO
+        ========================= */
         .header {
             position: absolute;
             top: 10px;
@@ -47,8 +47,8 @@
         }
 
         /* =========================
-   PANEL BASE
-========================= */
+        PANEL BASE
+        ========================= */
         .panel {
             position: absolute;
             top: 100px;
@@ -102,8 +102,8 @@
         }
 
         /* =========================
-   AUTHORS
-========================= */
+        AUTHORS
+        ========================= */
         #authors {
             position: absolute;
             bottom: 20px;
@@ -189,6 +189,78 @@
 
         .search-container {
             padding: 0 10px 0 10px;
+        }
+        /* =========================
+        RESPONSIVE MOBILE
+        ========================= */
+        @media (max-width: 768px) {
+
+            .header {
+                width: calc(100% - 20px);
+                top: 5px;
+                padding: 8px;
+            }
+
+            .header h1 {
+                font-size: 16px;
+            }
+
+            .header p {
+                font-size: 11px;
+            }
+
+            /* PANELES */
+            .panel {
+                width: 170px;
+                max-height: 40vh;
+                top: auto;
+                bottom: 10px;
+            }
+
+            /* IZQUIERDA */
+            #panelRed {
+                left: 10px;
+            }
+
+            /* DERECHA */
+            #panelBlue {
+                right: 10px;
+            }
+
+            /* LISTAS */
+            .panel-content {
+                max-height: 30vh;
+                font-size: 11px;
+            }
+
+            .country-item {
+                font-size: 11px;
+            }
+
+            /* AUTORES */
+            #authors {
+                display: none;
+            }
+
+            /* BOTÓN RESET */
+            .reset-btn {
+                top: 80px;
+                left: 10px;
+                font-size: 11px;
+                padding: 6px 8px;
+            }
+
+            /* LEYENDA */
+            #legend {
+                width: 150px;
+                font-size: 11px;
+                bottom: 60px;
+            }
+
+            /* INPUTS */
+            .panel input {
+                font-size: 11px;
+            }
         }
     </style>
 </head>
@@ -538,6 +610,15 @@
 
         function resetMap() {
             map.setView([20, 0], 2);
+        }
+
+        /* =========================
+           MOBILE COLLAPSE INICIAL  
+        ========================= */
+        if (window.innerWidth <= 768) {
+
+            togglePanel('red');
+            togglePanel('blue');
         }
 
     </script>
