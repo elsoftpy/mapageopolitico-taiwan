@@ -398,12 +398,53 @@
     <div id="drawer" class="drawer">
         <button id="drawerCloseBtn" style="position: absolute; top: 10px; right: 10px; background: transparent; border: none; font-size: 1.8em; cursor: pointer; z-index: 21001;">&times;</button>
 
-        <h3>Leyenda</h3>
-        <p>🔵 Reconoce Taiwán</p>
-        <p>🔴 No reconoce Taiwán</p>
-        <p>🟠 Zonas de tensión</p>
+        <!-- DRAWER BLUE LIST -->
+        <div style="margin-top: 50px;">
+            <div class="panel-header" onclick="togglePanel('blue')" style="cursor: pointer;">
+                🔵 Reconocen Taiwan
+                <span class="collapse-icon">▸</span>
+            </div>
+            <div class="search-container" style="padding: 8px 10px; display: none;">
+                <input type="text" id="searchBlueDrawer" placeholder="Buscar país..." style="width: 100%; box-sizing: border-box; padding: 6px; border: 1px solid #ddd; border-radius: 6px; font-size: 12px;" />
+            </div>
+            <div class="panel-content" id="listBlueDrawer" style="display: none;"></div>
+        </div>
 
-        <hr>
+        <hr style="margin: 15px 0;">
+
+        <!-- DRAWER RED LIST -->
+        <div style="margin-top: 15px;">
+            <div class="panel-header" onclick="togglePanel('red')" style="cursor: pointer;">
+                🔴 ONU - No reconoce Taiwan
+                <span class="collapse-icon">▸</span>
+            </div>
+            <div class="search-container" style="padding: 8px 10px; display: none;">
+                <input type="text" id="searchRedDrawer" placeholder="Buscar país..." style="width: 100%; box-sizing: border-box; padding: 6px; border: 1px solid #ddd; border-radius: 6px; font-size: 12px;" />
+            </div>
+            <div class="panel-content" id="listRedDrawer" style="display: none;"></div>
+        </div>
+
+        <hr style="margin: 15px 0;">
+
+        <!-- DRAWER LEGEND -->
+        <div style="padding: 10px 0;">
+            <p style="margin: 0 0 8px 0; font-weight: bold; font-size: 13px;">Leyenda:</p>
+            <p style="margin: 5px 0; font-size: 12px;">🟠 Zonas de tensión</p>
+        </div>
+
+        <hr style="margin: 15px 0;">
+
+        <!-- DRAWER AUTHORS -->
+        <div style="padding: 10px 0;">
+            <strong style="font-size: 13px;">Elaborado por:</strong>
+            <ul style="margin:5px 0 0 15px; padding:0; font-size: 12px;">
+                <li>Sara Bogarín</li>
+                <li>Sara Espínola</li>
+                <li>Hilary González</li>
+                <li>Gimena Morel</li>
+                <li>Jesús Apuril</li>
+            </ul>
+        </div>
 
     </div>
 
@@ -418,15 +459,37 @@
         ========================= */
         function togglePanel(type) {
 
-            const el = document.getElementById(type === 'red' ? 'listRed' : 'listBlue');
-            const header = el.parentElement.querySelector('.panel-header');
-            const icon = header.querySelector('.collapse-icon');
+            const listId = type === 'red' ? 'listRed' : 'listBlue';
+            const drawerListId = type === 'red' ? 'listRedDrawer' : 'listBlueDrawer';
+            
+            const el = document.getElementById(listId);
+            const drawerEl = document.getElementById(drawerListId);
+            
+            if (!el || !drawerEl) return;
+            
+            // Find the headers closest to each list
+            const mainHeader = el.parentElement?.querySelector('.panel-header');
+            const drawerHeader = drawerEl.parentElement?.querySelector('.panel-header');
+            
+            const mainIcon = mainHeader?.querySelector('.collapse-icon');
+            const drawerIcon = drawerHeader?.querySelector('.collapse-icon');
+
+            // Find search containers
+            const mainSearchContainer = el.parentElement?.querySelector('.search-container');
+            const drawerSearchContainer = drawerEl.parentElement?.querySelector('.search-container');
 
             const isHidden = el.style.display === 'none';
 
+            // Toggle both lists and their icons
             el.style.display = isHidden ? 'block' : 'none';
+            drawerEl.style.display = isHidden ? 'block' : 'none';
 
-            icon.textContent = isHidden ? '▾' : '▸';
+            // Toggle search containers
+            if (mainSearchContainer) mainSearchContainer.style.display = isHidden ? 'block' : 'none';
+            if (drawerSearchContainer) drawerSearchContainer.style.display = isHidden ? 'block' : 'none';
+
+            if (mainIcon) mainIcon.textContent = isHidden ? '▾' : '▸';
+            if (drawerIcon) drawerIcon.textContent = isHidden ? '▾' : '▸';
         }
 
         /* =========================
@@ -551,6 +614,8 @@
 
         bindSearch('searchRed', 'listRed');
         bindSearch('searchBlue', 'listBlue');
+        bindSearch('searchRedDrawer', 'listRedDrawer');
+        bindSearch('searchBlueDrawer', 'listBlueDrawer');
 
         /* =========================
            MAP RENDER
@@ -622,9 +687,13 @@
 
             const red = document.getElementById('listRed');
             const blue = document.getElementById('listBlue');
+            const redDrawer = document.getElementById('listRedDrawer');
+            const blueDrawer = document.getElementById('listBlueDrawer');
 
             red.innerHTML = '';
             blue.innerHTML = '';
+            redDrawer.innerHTML = '';
+            blueDrawer.innerHTML = '';
 
             const features =
                 worldData?.features?.[0]?.features ||
@@ -646,35 +715,38 @@
 
             countries.forEach(c => {
 
-                const div = document.createElement('div');
-                div.className = 'country-item';
-                div.textContent = c.name;
+                const createCountryItem = () => {
+                    const div = document.createElement('div');
+                    div.className = 'country-item';
+                    div.textContent = c.name;
+                    div.dataset.name = c.name.toLowerCase();
 
-                div.dataset.name = c.name.toLowerCase();
+                    div.onclick = () => {
+                        const layer = geoJsonLayer.getLayers()
+                            .find(l => {
+                                const lid = (
+                                    l.feature.id ||
+                                    l.feature.properties?.["ISO3166-1-Alpha-3"] ||
+                                    l.feature.properties?.ISO_A3
+                                )?.toUpperCase().trim();
 
-                div.onclick = () => {
+                                return lid === c.iso;
+                            });
 
-                    const layer = geoJsonLayer.getLayers()
-                        .find(l => {
-                            const lid = (
-                                l.feature.id ||
-                                l.feature.properties?.["ISO3166-1-Alpha-3"] ||
-                                l.feature.properties?.ISO_A3
-                            )?.toUpperCase().trim();
-
-                            return lid === c.iso;
-                        });
-
-                    if (layer) {
-                        zoomToFeature(layer);
-                        layer.openPopup();
-                    }
+                        if (layer) {
+                            zoomToFeature(layer);
+                            layer.openPopup();
+                        }
+                    };
+                    return div;
                 };
 
                 if (recognizesTaiwan.has(c.iso)) {
-                    blue.appendChild(div);
+                    blue.appendChild(createCountryItem());
+                    blueDrawer.appendChild(createCountryItem());
                 } else if (notRecognizesTaiwan.has(c.iso)) {
-                    red.appendChild(div);
+                    red.appendChild(createCountryItem());
+                    redDrawer.appendChild(createCountryItem());
                 }
             });
         }
