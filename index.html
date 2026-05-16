@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Taiwan Recognition Map</title>
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial;
+            overflow: hidden;
+        }
+
+        #map {
+            width: 100vw;
+            height: 100vh;
+        }
+
+        /* =========================
+   HEADER CENTRADO
+========================= */
+        .header {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 9999;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.85);
+            padding: 10px 18px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 18px;
+        }
+
+        .header p {
+            margin: 5px 0 0 0;
+            font-size: 12px;
+        }
+
+        /* =========================
+   PANEL BASE
+========================= */
+        .panel {
+            position: absolute;
+            top: 100px;
+            z-index: 9999;
+            background: white;
+            padding: 0;
+            width: 260px;
+            max-height: calc(100vh - 250px);
+            overflow: hidden;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        /* IZQUIERDA */
+        #panelRed {
+            left: 20px;
+        }
+
+        /* DERECHA */
+        #panelBlue {
+            right: 50px;
+        }
+
+        /* HEADER PANEL (COLLAPSE) */
+        .panel-header {
+            padding: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            background: #f2f2f2;
+            border-bottom: 1px solid #ddd;
+            font-size: 13px;
+        }
+
+        /* CONTENT */
+        .panel-content {
+            padding: 10px;
+            overflow: auto;
+            max-height: 65vh;
+        }
+
+        /* ITEMS */
+        .country-item {
+            padding: 3px 0;
+            cursor: pointer;
+            font-size: 13px;
+            color: #2980b9;
+        }
+
+        .country-item:hover {
+            text-decoration: underline;
+        }
+
+        /* =========================
+   AUTHORS
+========================= */
+        #authors {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            z-index: 9999;
+            background: white;
+            padding: 10px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            font-size: 12px;
+            width: 200px;
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .panel input {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 6px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 12px;
+        }
+
+        .collapse-icon {
+            font-size: 12px;
+            opacity: 0.7;
+        }
+
+        .reset-btn {
+            position: absolute;
+            top: 10px;
+            right: 50px;
+            z-index: 9999;
+            background: white;
+            border: none;
+            padding: 8px 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            font-size: 12px;
+        }
+
+        .reset-btn:hover {
+            background: #f2f2f2;
+        }
+
+        #legend {
+            position: absolute;
+            bottom: 20px;
+            right: 50px;
+            z-index: 9999;
+            background: white;
+            padding: 10px 12px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            font-size: 12px;
+            width: 200px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin: 4px 0;
+            gap: 8px;
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .dot.orange {
+            background: #ff9800;
+        }
+
+        .search-container {
+            padding: 0 10px 0 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- HEADER -->
+    <div class="header">
+        <h1>Mapa Geopolítico</h1>
+        <p>Países que reconocen a Taiwan y China y zonas de tensión</p>
+    </div>
+
+    <button class="reset-btn" onclick="resetMap()">
+        ⟳ Restablecer vista
+    </button>
+
+    <!-- PANEL ROJO -->
+    <div class="panel" id="panelRed">
+        <div class="panel-header" onclick="togglePanel('red')">
+            🔴 ONU - No reconoce Taiwan
+            <span class="collapse-icon">▾</span>
+        </div>
+        <div class="search-container">
+            <input type="text" id="searchRed" placeholder="Buscar país..." />
+        </div>
+        <div class="panel-content" id="listRed"></div>
+
+    </div>
+
+    <!-- PANEL AZUL -->
+    <div class="panel" id="panelBlue">
+        <div class="panel-header" onclick="togglePanel('blue')">
+            🔵 Reconocen Taiwan
+            <span class="collapse-icon">▾</span>
+        </div>
+        <div class="search-container">
+            <input type="text" id="searchBlue" placeholder="Buscar país..." />
+        </div>
+        <div class="panel-content" id="listBlue"></div>
+    </div>
+
+    <!-- AUTORES -->
+    <div id="authors">
+        <strong>Elaborado por:</strong>
+        <ul style="margin:5px 0 0 15px; padding:0;">
+            <li>Sara Bogarín</li>
+            <li>Sara Espínola</li>
+            <li>Hilary González</li>
+            <li>Gimena Morel</li>
+            <li>Jesús Apuril</li>
+        </ul>
+    </div>
+
+    <div id="legend">
+
+        <div class="legend-item">
+            <span class="dot orange"></span>
+            Zona de tensión
+        </div>
+    </div>
+
+    <div id="map"></div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <script>
+
+        /* =========================
+           COLLAPSE
+        ========================= */
+        function togglePanel(type) {
+
+            const el = document.getElementById(type === 'red' ? 'listRed' : 'listBlue');
+            const header = el.parentElement.querySelector('.panel-header');
+            const icon = header.querySelector('.collapse-icon');
+
+            const isHidden = el.style.display === 'none';
+
+            el.style.display = isHidden ? 'block' : 'none';
+
+            icon.textContent = isHidden ? '▾' : '▸';
+        }
+
+        /* =========================
+           DATA
+        ========================= */
+        const recognizesTaiwan = new Set([
+            "PRY", "GTM", "BLZ", "HTI", "KNA", "LCA", "VCT",
+            "MHL", "PLW", "TUV", "SWZ", "VAT"
+        ]);
+
+        const notRecognizesTaiwan = new Set([
+            "AFG", "ALB", "DZA", "AND", "AGO", "ATG", "ARG", "ARM", "AUS", "AUT",
+            "AZE", "BHS", "BHR", "BGD", "BRB", "BLR", "BEL", "BEN", "BTN", "BOL",
+            "BIH", "BWA", "BRA", "BRN", "BGR", "BFA", "BDI", "CPV", "KHM", "CMR",
+            "CAN", "CAF", "TCD", "CHL", "CHN", "COL", "COM", "COG", "COD", "CRI",
+            "CIV", "HRV", "CUB", "CYP", "CZE", "DNK", "DJI", "DMA", "DOM", "ECU",
+            "EGY", "SLV", "GNQ", "ERI", "EST", "ETH", "FJI", "FIN", "FRA", "GAB",
+            "GMB", "GEO", "DEU", "GHA", "GRC", "GRD", "GIN", "GNB", "GUY", "HND",
+            "HUN", "ISL", "IND", "IDN", "IRN", "IRQ", "IRL", "ISR", "ITA", "JAM",
+            "JPN", "JOR", "KAZ", "KEN", "KIR", "PRK", "KOR", "KWT", "KGZ", "LAO",
+            "LVA", "LBN", "LSO", "LBR", "LBY", "LIE", "LTU", "LUX", "MDG", "MWI",
+            "MYS", "MDV", "MLI", "MLT", "MRT", "MUS", "MEX", "FSM", "MDA", "MCO",
+            "MNG", "MNE", "MAR", "MOZ", "MMR", "NAM", "NRU", "NPL", "NLD", "NZL",
+            "NIC", "NER", "NGA", "MKD", "NOR", "OMN", "PAK", "PAN", "PNG", "PER",
+            "PHL", "POL", "PRT", "QAT", "ROU", "RUS", "RWA", "WSM", "SMR", "STP",
+            "SAU", "SEN", "SRB", "SYC", "SLE", "SGP", "SVK", "SVN", "SLB", "SOM",
+            "ZAF", "SSD", "ESP", "LKA", "SDN", "SUR", "SWE", "CHE", "SYR", "TJK",
+            "TZA", "THA", "TLS", "TGO", "TON", "TTO", "TUN", "TUR", "TKM", "UGA",
+            "UKR", "ARE", "GBR", "USA", "URY", "UZB", "VUT", "VEN", "VNM", "YEM",
+            "ZMB", "ZWE"
+        ]);
+
+        /* =========================
+           MAP
+        ========================= */
+        const map = L.map('map').setView([20, 0], 2);
+
+        let geoJsonLayer;
+
+        /* =========================
+           HELPERS
+        ========================= */
+        function getISO(f) {
+            return f.id;
+        }
+
+        function getStatus(iso) {
+            if (recognizesTaiwan.has(iso)) return 'blue';
+            if (notRecognizesTaiwan.has(iso)) return 'red';
+            return 'gray';
+        }
+
+        function getColor(status) {
+            if (status === 'blue') return '#3498DB';
+            if (status === 'red') return '#E74C3C';
+            return '#95A5A6';
+        }
+
+        function getStatusLabel(status) {
+            if (status === 'blue') return 'Reconoce a Taiwan';
+            if (status === 'red') return 'No reconoce a Taiwan';
+            return 'N/A';
+        }
+
+        function zoomToFeature(layer) {
+
+            const bounds = layer.getBounds();
+            const center = bounds.getCenter();
+
+            const iso = layer.feature?.id;
+
+            const smallCountries = new Set([
+                "VAT", "MCO", "SMR", "LIE", "SGP", "BHR", "PLW", "MHL", "TUV"
+            ]);
+
+            const maxZoom = smallCountries.has(iso) ? 18 : 6;
+
+            // 👇 fuerza cambio visual aunque ya esté en vista
+            map.panBy([1, 1], { animate: false });
+
+            setTimeout(() => {
+                map.fitBounds(bounds, {
+                    padding: [50, 50],
+                    maxZoom: maxZoom,
+                    animate: true
+                });
+            }, 50);
+        }
+
+        function bindSearch(inputId, listId) {
+
+            const input = document.getElementById(inputId);
+            const list = document.getElementById(listId);
+
+            input.addEventListener('input', () => {
+
+                const value = input.value.toLowerCase();
+
+                const items = list.querySelectorAll('.country-item');
+
+                items.forEach(el => {
+
+                    const match = el.dataset.name.includes(value);
+                    el.style.display = match ? 'block' : 'none';
+                });
+            });
+        }
+
+        bindSearch('searchRed', 'listRed');
+        bindSearch('searchBlue', 'listBlue');
+
+        /* =========================
+           MAP RENDER
+        ========================= */
+        let tensionLayer;
+
+        async function renderTensionZones(tensionZones) {
+
+            if (tensionLayer) {
+                tensionLayer.remove();
+            }
+
+            tensionLayer = L.geoJSON(tensionZones, {
+
+                style: (f) => ({
+                    color: "#ff9800",
+                    weight: 2,
+                    fillColor: "#ff9800",
+                    fillOpacity: 0.15,
+                    dashArray: "5,5"
+                }),
+
+                onEachFeature: (f, layer) => {
+                    layer.bindPopup(`<strong>${f.properties.name}</strong>`);
+                }
+
+            }).addTo(map);
+        }
+
+        
+
+        function renderMap(worldData) {
+
+            if (geoJsonLayer) geoJsonLayer.remove();
+
+            geoJsonLayer = L.geoJSON(worldData, {
+
+                style: (f) => {
+                    const iso = getISO(f);
+                    const status = getStatus(iso);
+
+                    return {
+                        fillColor: getColor(status),
+                        color: '#fff',
+                        weight: 1,
+                        fillOpacity: 0.8
+                    };
+                },
+
+                onEachFeature: (f, layer) => {
+
+                    const iso = getISO(f);
+                    const name = f.properties?.name || iso;
+                    const status = getStatus(iso);
+
+                    layer.bindPopup(`
+                <strong>${name}</strong><br>
+                ${getStatusLabel(status)}
+            `);
+                }
+
+            }).addTo(map);
+        }
+
+        /* =========================
+           LISTAS
+        ========================= */
+        function renderLists(worldData) {
+
+            const red = document.getElementById('listRed');
+            const blue = document.getElementById('listBlue');
+
+            red.innerHTML = '';
+            blue.innerHTML = '';
+
+            const features =
+                worldData?.features?.[0]?.features ||
+                worldData?.features ||
+                [];
+
+
+            const countries = features
+                .map(f => ({
+                    iso: (
+                        f.id ||
+                        f.properties?.["ISO3166-1-Alpha-3"] ||
+                        f.properties?.ISO_A3
+                    )?.toUpperCase().trim(),
+                    name: f.properties?.name || f.id
+                }))
+                .filter(c => c.iso)
+                .sort((a, b) => a.name.localeCompare(b.name));
+
+            countries.forEach(c => {
+
+                const div = document.createElement('div');
+                div.className = 'country-item';
+                div.textContent = c.name;
+
+                div.dataset.name = c.name.toLowerCase();
+
+                div.onclick = () => {
+
+                    const layer = geoJsonLayer.getLayers()
+                        .find(l => {
+                            const lid = (
+                                l.feature.id ||
+                                l.feature.properties?.["ISO3166-1-Alpha-3"] ||
+                                l.feature.properties?.ISO_A3
+                            )?.toUpperCase().trim();
+
+                            return lid === c.iso;
+                        });
+
+                    if (layer) {
+                        zoomToFeature(layer);
+                        layer.openPopup();
+                    }
+                };
+
+                if (recognizesTaiwan.has(c.iso)) {
+                    blue.appendChild(div);
+                } else if (notRecognizesTaiwan.has(c.iso)) {
+                    red.appendChild(div);
+                }
+            });
+        }
+
+        /* =========================
+           INIT
+        ========================= */
+        async function init() {
+            try {
+                const response = await fetch('data/countries.geojson');
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status} while loading countries.geojson`);
+                }
+
+                const worldData = await response.json();
+                renderMap(worldData);
+                renderLists(worldData);
+
+                const tensionResponse = await fetch('data/tension-zones.geojson');
+                if (!tensionResponse.ok) {
+                    throw new Error(`HTTP ${tensionResponse.status} while loading tension-zones.geojson`);
+                }
+
+                const tensionData = await tensionResponse.json();
+                renderTensionZones(tensionData);
+            } catch (error) {
+                console.error('Error loading GeoJSON:', error);
+            }
+        }
+
+        init();
+
+        function resetMap() {
+            map.setView([20, 0], 2);
+        }
+
+    </script>
+
+</body>
+
+</html>

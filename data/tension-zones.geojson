@@ -1,0 +1,137 @@
+{
+    "type": "FeatureCollection",
+    "features": [
+        {
+            "type": "Feature",
+            "properties": {
+                "name": "Estrecho de Taiwán"
+            },
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            118.0,
+                            25.5
+                        ],
+                        [
+                            122.0,
+                            25.5
+                        ],
+                        [
+                            122.0,
+                            21.0
+                        ],
+                        [
+                            118.0,
+                            21.0
+                        ],
+                        [
+                            118.0,
+                            25.5
+                        ]
+                    ]
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "name": "Mar de China Meridional"
+            },
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            109.0,
+                            23.0
+                        ],
+                        [
+                            121.0,
+                            23.0
+                        ],
+                        [
+                            121.0,
+                            5.0
+                        ],
+                        [
+                            109.0,
+                            5.0
+                        ],
+                        [
+                            109.0,
+                            23.0
+                        ]
+                    ]
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "name": "Mar de China Oriental"
+            },
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            122.0,
+                            33.0
+                        ],
+                        [
+                            127.0,
+                            33.0
+                        ],
+                        [
+                            127.0,
+                            25.0
+                        ],
+                        [
+                            122.0,
+                            25.0
+                        ],
+                        [
+                            122.0,
+                            33.0
+                        ]
+                    ]
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "name": "Zona Japón - Taiwán - Filipinas"
+            },
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            121.0,
+                            33.0
+                        ],
+                        [
+                            131.0,
+                            33.0
+                        ],
+                        [
+                            131.0,
+                            18.0
+                        ],
+                        [
+                            121.0,
+                            18.0
+                        ],
+                        [
+                            121.0,
+                            33.0
+                        ]
+                    ]
+                ]
+            }
+        }
+    ]
+}
