@@ -313,6 +313,11 @@
             }
         }
 
+        .leaflet-bottom.leaflet-left {
+            bottom: 70px;
+            left: 10px;
+        }
+
     </style>
 </head>
 
@@ -440,7 +445,21 @@
         /* =========================
            MAP
         ========================= */
-        const map = L.map('map').setView([20, 0], 2);
+            // Set zoom control position based on screen size and update on resize
+            let zoomControl;
+            const map = L.map('map', { zoomControl: false }).setView([20, 0], 2);
+            function setZoomControl() {
+                if (zoomControl) {
+                    map.removeControl(zoomControl);
+                }
+                const position = window.innerWidth <= 768 ? 'bottomleft' : 'topleft';
+                zoomControl = L.control.zoom({ position });
+                zoomControl.addTo(map);
+            }
+            setZoomControl();
+            window.addEventListener('resize', () => {
+                setZoomControl();
+            });
 
         let geoJsonLayer;
 
