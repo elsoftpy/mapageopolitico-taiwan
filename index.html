@@ -190,6 +190,40 @@
         .search-container {
             padding: 0 10px 0 10px;
         }
+        
+       
+        #menuBtn {
+            position: absolute;
+            left: 10px;
+            top: 10px;
+            border: none;
+            background: white;
+            padding: 6px 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+            z-index: 10000;
+        }
+
+        /* DRAWER */
+        .drawer {
+            position: absolute;
+            top: 0;
+            right: -300px;
+            width: 280px;
+            height: 100vh;
+            background: white;
+            z-index: 20000;
+            box-shadow: -2px 0 10px rgba(0,0,0,0.3);
+            transition: right 0.3s ease;
+            padding: 12px;
+            overflow-y: auto;
+        }
+
+        .drawer.open {
+            right: 0;
+        }
+
         /* =========================
         RESPONSIVE MOBILE
         ========================= */
@@ -261,7 +295,20 @@
             .panel input {
                 font-size: 11px;
             }
+
+            #panelRed,
+            #panelBlue,
+            #legend {
+                display: none;
+            }
+
+            .header {
+                width: calc(100% - 20px);
+                left: 50%;
+                transform: translateX(-50%);
+            }
         }
+
     </style>
 </head>
 
@@ -269,6 +316,7 @@
 
     <!-- HEADER -->
     <div class="header">
+        <button id="menuBtn">☰</button>
         <h1>Mapa Geopolítico</h1>
         <p>Países que reconocen a Taiwan y China y zonas de tensión</p>
     </div>
@@ -320,6 +368,17 @@
             <span class="dot orange"></span>
             Zona de tensión
         </div>
+    </div>
+
+    <div id="drawer" class="drawer">
+
+        <h3>Leyenda</h3>
+        <p>🔵 Reconoce Taiwán</p>
+        <p>🔴 No reconoce Taiwán</p>
+        <p>🟠 Zonas de tensión</p>
+
+        <hr>
+
     </div>
 
     <div id="map"></div>
@@ -620,6 +679,13 @@
             togglePanel('red');
             togglePanel('blue');
         }
+
+        const drawer = document.getElementById("drawer");
+        const menuBtn = document.getElementById("menuBtn");
+
+        menuBtn.addEventListener("click", () => {
+            drawer.classList.toggle("open");
+        });
 
     </script>
 
