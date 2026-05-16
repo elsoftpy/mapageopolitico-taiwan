@@ -461,39 +461,56 @@
         /* =========================
            COLLAPSE
         ========================= */
-        function togglePanel(type) {
+        const panelState = {
+            red: true,
+            blue: true
+        };
+
+        function applyPanelState(type) {
 
             const listId = type === 'red' ? 'listRed' : 'listBlue';
             const drawerListId = type === 'red' ? 'listRedDrawer' : 'listBlueDrawer';
-            
+
             const el = document.getElementById(listId);
             const drawerEl = document.getElementById(drawerListId);
-            
+
             if (!el || !drawerEl) return;
-            
-            // Find the headers closest to each list
+
             const mainHeader = el.parentElement?.querySelector('.panel-header');
             const drawerHeader = drawerEl.parentElement?.querySelector('.panel-header');
-            
+
             const mainIcon = mainHeader?.querySelector('.collapse-icon');
             const drawerIcon = drawerHeader?.querySelector('.collapse-icon');
 
-            // Find search containers
             const mainSearchContainer = el.parentElement?.querySelector('.search-container');
             const drawerSearchContainer = drawerEl.parentElement?.querySelector('.search-container');
 
-            const isHidden = el.style.display === 'none';
+            const isExpanded = !!panelState[type];
 
-            // Toggle both lists and their icons
-            el.style.display = isHidden ? 'block' : 'none';
-            drawerEl.style.display = isHidden ? 'block' : 'none';
+            el.style.display = isExpanded ? 'block' : 'none';
+            drawerEl.style.display = isExpanded ? 'block' : 'none';
 
-            // Toggle search containers
-            if (mainSearchContainer) mainSearchContainer.style.display = isHidden ? 'block' : 'none';
-            if (drawerSearchContainer) drawerSearchContainer.style.display = isHidden ? 'block' : 'none';
+            if (mainSearchContainer) mainSearchContainer.style.display = isExpanded ? 'block' : 'none';
+            if (drawerSearchContainer) drawerSearchContainer.style.display = isExpanded ? 'block' : 'none';
 
-            if (mainIcon) mainIcon.textContent = isHidden ? '▾' : '▸';
-            if (drawerIcon) drawerIcon.textContent = isHidden ? '▾' : '▸';
+            if (mainIcon) mainIcon.textContent = isExpanded ? '▾' : '▸';
+            if (drawerIcon) drawerIcon.textContent = isExpanded ? '▾' : '▸';
+        }
+
+        function togglePanel(type) {
+            panelState[type] = !panelState[type];
+            applyPanelState(type);
+        }
+
+        function applyResponsivePanelDefaults() {
+            const isMobileView = window.matchMedia('(max-width: 768px)').matches;
+
+            // Desktop starts expanded; mobile drawer starts collapsed.
+            panelState.red = !isMobileView;
+            panelState.blue = !isMobileView;
+
+            applyPanelState('red');
+            applyPanelState('blue');
         }
 
         /* =========================
@@ -788,9 +805,18 @@
         }
 
         /* =========================
-           MOBILE COLLAPSE INICIAL  
+           RESPONSIVE PANEL DEFAULTS
         ========================= */
-        // No initial collapse: lists are expanded by default
+        applyResponsivePanelDefaults();
+
+        let wasMobileView = window.matchMedia('(max-width: 768px)').matches;
+        window.addEventListener('resize', () => {
+            const isMobileView = window.matchMedia('(max-width: 768px)').matches;
+            if (isMobileView !== wasMobileView) {
+                wasMobileView = isMobileView;
+                applyResponsivePanelDefaults();
+            }
+        });
 
         const drawer = document.getElementById("drawer");
         const menuBtn = document.getElementById("menuBtn");
